@@ -28,19 +28,18 @@ def print_board(board):
 def gen_board():
     """
     generates a game board (np array with 16 elements)
-    all squares are empty(0) except two squares, which are filled
-    with twos
+    all squares are empty(0) except two squares
     """
     board = np.zeros(16, dtype=int)
 
-    # randomly add two random twos.
+    # randomly add two random stuff
     board = insert_random(insert_random(board))
 
     return board
 
 def is_board_valid(board):
     """
-    returns False if the board contains an element that is 
+    returns False if the board contains an element that is
     neither a power of 2 nor 0
 
     returns False if the board doesn't conform to required
@@ -56,7 +55,30 @@ def is_board_valid(board):
         if 2**np.int(np.log2(elem)) != elem:
             return False
     return True
-        
+
+def can_collapse(row):
+    """
+    returns true if the given row
+    can be collapsed to the left
+
+    can also be a column
+    """
+
+    for a,b in zip(row[1:], row):
+        if a==0:
+            continue
+        if b==0 or a==b:
+            return True
+    return False
+
+def can_collapse_r(row):
+    """
+    similar to can_collapse, but
+    in the reversed direction
+    """
+    row_r = row[::-1]
+    return can_collapse(row_r)
+
 
 def legal_moves(board):
     """
@@ -65,68 +87,25 @@ def legal_moves(board):
     """
     lm = []
     board_unrolled = board.reshape([4,4])
-    flag = False
 
-    #check for up
-    for i in range(3, 0, -1):
-        for a,b in zip(board_unrolled[i], board_unrolled[i-1]):
-            if a==0:
-                continue
-            if b==0 or a==b:
-                lm.append(MOVE_UP)
-                flag = True
-                break
-        if flag:
-            break
+    if np.any(np.apply_along_axis(can_collapse, 0, board_unrolled)):
+        lm.append(MOVE_UP)
 
-    flag = False
+    if np.any(np.apply_along_axis(can_collapse_r, 0, board_unrolled)):
+        lm.append(MOVE_DOWN)
 
-    #check for down
-    for i in range(3):
-        for a,b in zip(board_unrolled[i], board_unrolled[i+1]):
-            if a==0:
-                continue
-            if b==0 or a==b:
-                lm.append(MOVE_DOWN)
-                flag = True
-                break
-        if flag:
-            break
+    if np.any(np.apply_along_axis(can_collapse, 1, board_unrolled)):
+        lm.append(MOVE_LEFT)
 
-    flag = False
-
-    #check for left
-    for i in range(3,0,-1):
-        for a,b in zip(board_unrolled[:,i], board_unrolled[:,i-1]):
-            if a==0:
-                continue
-            if b==0 or a==b:
-                lm.append(MOVE_LEFT)
-                flag = True
-                break
-        if flag:
-            break
-
-    flag = False
-
-    #check for right
-    for i in range(3):
-        for a,b in zip(board_unrolled[:,i], board_unrolled[:,i+1]):
-            if a==0:
-                continue
-            if b==0 or a==b:
-                lm.append(MOVE_RIGHT)
-                flag = True
-                break
-        if flag:
-            break
+    if np.any(np.apply_along_axis(can_collapse_r, 1, board_unrolled)):
+        lm.append(MOVE_RIGHT)
 
     return lm
 
 def collapse(board_u):
     """
     takes a row/column of the board
-    and collapses it
+    and collapses it to the left
     """
     i = 1
     limit = 0
@@ -134,7 +113,7 @@ def collapse(board_u):
         if board_u[i]==0:
             i += 1
             continue
-        
+
         up_index = i-1
         curr_index = i
         while up_index>=0 and board_u[up_index]==0:
@@ -160,9 +139,11 @@ def collapse_r(board_u):
     rev_board_u = board_u[::-1]
     return collapse(rev_board_u)[::-1]
 
-def perform_turn(board_u, move):
+def perform_turn(board_u, move, ins_random=True):
     """
     perform the move and return a new board
+    if ins_random==False, a new random cell
+    is not added.
     """
 
     if move not in legal_moves(board_u):
@@ -180,8 +161,9 @@ def perform_turn(board_u, move):
         np.apply_along_axis(collapse_r, 1, board)
 
     board_u = board.reshape((16,))
-    board_u = insert_random(board_u)
-    
+    if ins_random:
+        board_u = insert_random(board_u)
+
     if not legal_moves(board_u):
         return (board_u, TURN_GAME_OVER)
     else:
@@ -192,12 +174,11 @@ def insert_random(board):
     if np.all(not_zero):
         return board
 
-    # get the indices of empty squares
-    # TODO: beautify this
-    empty_indices = list(map(lambda b: b[0], filter(lambda b : not b[1], enumerate(not_zero))))
-    
+    r_ind = np.random.randint(16)
+    while board[r_ind]!=0:
+        r_ind = (r_ind + 1)%16
+
     r_val = np.random.choice([2,4])
-    r_ind = np.random.choice(empty_indices)
 
     board[r_ind] = r_val
     return board

@@ -1,20 +1,18 @@
 from game import *
+import interactive_game
 
 KEYS = "wsad"
 
-board = gen_board()
-while True:
-    print_board(board)
+def human_compute_func(board, lm):
+    while True:
+        response = input("> ")
+        if len(response)!=1 or response not in KEYS:
+            print("Illegal move.")
+        else:
+            break
 
-    lm = [KEYS[i] for i in legal_moves(board)]
-    print("LEGAL: {}".format(lm))
+    # assumes that MOVE_UP=0, MOVE_DOWN=1...
+    return KEYS.index(response)
 
-    response = input()
-    board,res = perform_turn(board, KEYS.index(response))
-
-    if res==TURN_ILLEGAL:
-        print("ILLEGAL MOVE! Press enter.")
-        input()
-    elif res==TURN_GAME_OVER:
-        print("Whoops. Dead :)")
-        break
+print("Use WSAD")
+interactive_game.start(human_compute_func)
