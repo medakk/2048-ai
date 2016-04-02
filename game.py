@@ -149,15 +149,16 @@ def collapse_r(board_u):
     rev_board_u = board_u[::-1]
     return collapse(rev_board_u)[::-1]
 
-def perform_turn(board_u, move, ins_random=True):
+def perform_turn(board_u, move, ins_random=True, skip_check=False):
     """
     perform the move and return a new board
     if ins_random==False, a new random cell
     is not added.
     """
 
-    if move not in legal_moves(board_u):
-        return board_u, TURN_ILLEGAL
+    if not skip_check:
+        if move not in legal_moves(board_u):
+            return board_u, TURN_ILLEGAL
 
     board = board_u.reshape([4,4])
 
@@ -174,6 +175,8 @@ def perform_turn(board_u, move, ins_random=True):
     if ins_random:
         board_u = insert_random(board_u)
 
+    if skip_check:
+        return (board_u, TURN_OK)
     if not legal_moves(board_u):
         return (board_u, TURN_GAME_OVER)
     else:
@@ -188,7 +191,11 @@ def insert_random(board):
     while board[r_ind]!=0:
         r_ind = (r_ind + 1)%16
 
-    r_val = np.random.choice([2,4])
+    # 90% chance of 2
+    if np.random.randint(10)==0:
+        r_val = 4
+    else:
+        r_val = 2
 
     board[r_ind] = r_val
     return board

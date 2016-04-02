@@ -5,8 +5,21 @@ import interactive_game
 
 def compute_score(board, res=TURN_OK):
     score = 0
-    for elem in board:
-        score += elem**2
+
+    zero_count = 0
+    for i,elem in enumerate(board):
+        if elem==0:
+            zero_count += 1
+        elif i==0:
+            score += elem**5
+        elif i==1 or i==4:
+            score += elem**4
+        elif i==2 or i==5 or i==8:
+            score += elem**2
+        elif i==3 or i==6 or i==9 or i==12:
+            score += elem**1
+
+    #score = score * zero_count * 0.3
 
     if res==TURN_GAME_OVER or res==TURN_ILLEGAL:
         return -score
@@ -53,7 +66,7 @@ def get_best_move(board):
     best_move = None
     for move in lm:
         new_board, res = perform_turn(board.copy(), move, ins_random=False)
-        score = compute_score(new_board)
+        score = compute_score(new_board, res)
 
         score_move = (score,move)
         if best_move==None:
@@ -75,7 +88,7 @@ def minimax(board, lm=None, depth=5):
 
     best_move = None
     for move in lm:
-        new_board, res = perform_turn(board.copy(), move, ins_random=False)
+        new_board, res = perform_turn(board.copy(), move, ins_random=False, skip_check=True)
         score = compute_score(new_board)
 
         new_board = insert_random(new_board)
@@ -91,12 +104,13 @@ def minimax(board, lm=None, depth=5):
     return best_move
                
 turn = 0
+depth = 3
 def ai_2_compute_func(board, lm):
     global turn
-
+    global depth
     turn += 1
     depth = 3
-
+            
     next_score, next_move = minimax(board, lm=lm, depth=depth) 
     return next_move
 
