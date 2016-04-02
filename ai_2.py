@@ -6,7 +6,7 @@ import interactive_game
 def compute_score(board, res=TURN_OK):
     score = 0
     for elem in board:
-        score += elem*elem
+        score += elem**2
 
     if res==TURN_GAME_OVER or res==TURN_ILLEGAL:
         return -score
@@ -16,6 +16,7 @@ def compute_score(board, res=TURN_OK):
 def insert_worst_random(board):
     worst_i = -1
     worst_score = 2**16
+    replace_with = 0
     for i in range(16):
         if board[i]!=0:
             continue
@@ -26,13 +27,22 @@ def insert_worst_random(board):
         if score<worst_score:
             worst_score = score
             worst_i = i
+            replace_with = 4
+
+        board[i] = 2
+        score,move = get_best_move(board)
+
+        if score<worst_score:
+            worst_score = score
+            worst_i = i
+            replace_with = 2
 
         board[i] = 0
 
     if worst_i==-1:
         return board
     else:
-        board[i] = 4
+        board[i] = replace_with
         return board
 
 def get_best_move(board):
@@ -54,8 +64,8 @@ def get_best_move(board):
     return best_move
 
 def minimax(board, lm=None, depth=5):
-    if depth==0:
-        return (0, -1)
+    if depth==1:
+        return get_best_move(board)
 
     if not lm:
         lm = legal_moves(board)
@@ -68,7 +78,7 @@ def minimax(board, lm=None, depth=5):
         new_board, res = perform_turn(board.copy(), move, ins_random=False)
         score = compute_score(new_board)
 
-        #new_board = insert_worst_random(new_board)
+        new_board = insert_random(new_board)
         next_score, next_move = minimax(new_board.copy(), depth=depth-1)
         score += next_score
 

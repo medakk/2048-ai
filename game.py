@@ -79,12 +79,20 @@ def can_collapse_r(row):
     row_r = row[::-1]
     return can_collapse(row_r)
 
-
+lm_cache_board_id = None
+lm_cache_result = None
 def legal_moves(board):
     """
     returns a list of legal moves
     for the given board
     """
+    global lm_cache_board_id, lm_cache_result
+    
+    if lm_cache_board_id==id(board):
+        return lm_cache_result
+
+    lm_cache_board_id = id(board)
+
     lm = []
     board_unrolled = board.reshape([4,4])
 
@@ -99,6 +107,8 @@ def legal_moves(board):
 
     if np.any(np.apply_along_axis(can_collapse_r, 1, board_unrolled)):
         lm.append(MOVE_RIGHT)
+
+    lm_cache_result = lm
 
     return lm
 
