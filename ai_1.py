@@ -13,14 +13,14 @@ def compute_score(board):
     return score
 
 def ai_1_compute_func(board, lm):
-    possible_moves = []
+    best_move,best_score = -1, -1
     for move in lm:
         new_board, res = perform_turn(board.copy(), move, ins_random=False)
         score = compute_score(new_board)
 
-        possible_moves.append((score,move))
+        if score > best_score:
+            best_move, best_score = move, score
 
-    possible_moves.sort()
-    return possible_moves[-1][1]
+    return best_move
 
 interactive_game.start(ai_1_compute_func)
