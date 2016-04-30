@@ -6,22 +6,10 @@ from game import *
 import interactive_game
 
 def compute_score(board, res=TURN_OK):
-    score = 0
-
-    zero_count = 0
-    for i,elem in enumerate(board):
-        if elem==0:
-            zero_count += 1
-        elif i==0:
-            score += elem**5
-        elif i==1 or i==4:
-            score += elem**4
-        elif i==2 or i==5 or i==8:
-            score += elem**2
-        elif i==3 or i==6 or i==9 or i==12:
-            score += elem**1
-
-    #score = score * zero_count * 0.3
+    score = board[0]**5 \
+          + board[1]**4 + board[4]**4 \
+          + board[2]**2 + board[5]**2 + board[8]**2 \
+          + board[3]    + board[6]    + board[9]    + board[12]
 
     if res==TURN_GAME_OVER or res==TURN_ILLEGAL:
         return -score
